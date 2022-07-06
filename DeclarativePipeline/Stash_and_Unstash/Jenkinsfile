@@ -1,0 +1,48 @@
+pipeline {
+    agent none
+    stages {
+        stage("CreateFile") {
+            parallel {
+                stage("StageA") {
+                    agent { label "developer" }
+                    steps {
+                        build job: "CreateFileJob", parameters: [
+                            string(name: "myPath", value: "${WORKSPACE}/StageA/exitcode"),
+                            string(name: "myValue", value: "1234")
+                        ]
+                        dir("${WORKSPACE}/StageA") {
+                            stash name: "stashA"
+                        }
+                    }
+                }
+                stage("StageB") {
+                    agent { label "developer" }
+                    steps {
+                        build job: "CreateFileJob", parameters: [
+                            string(name: "myPath", value: "${WORKSPACE}/StageB/exitcode"),
+                            string(name: "myValue", value: "0914")
+                        ]
+                        dir("${WORKSPACE}/StageB") {
+                            stash name: "stashB"                       
+                        }
+                    }
+                }
+            }
+        }
+        stage("ReadFile") {
+            agent { label "built-in" }
+            steps {
+                dir("StageA") {
+                    unstash name: "stashA"              
+                }
+                dir("StageB") {
+                    unstash name: "stashB"
+                }
+                sh "ls StageA"
+                sh "cat StageA/exitcode"
+                sh "ls StageB"
+                sh "cat StageB/exitcode"
+            }
+        }
+    }
+}
