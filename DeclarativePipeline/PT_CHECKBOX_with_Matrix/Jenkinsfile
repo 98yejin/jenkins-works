@@ -1,0 +1,46 @@
+ properties([
+    parameters([
+            [$class: 'CascadeChoiceParameter', 
+            choiceType: 'PT_CHECKBOX',
+            description: 'Select Platform',
+            name: 'PLATFORM_FILTER',
+            script: [$class: 'GroovyScript',
+                fallbackScript: [
+                    classpath: [], 
+                    sandbox: true, 
+                    script: 'return ["ERROR"]'
+                ],
+                script: [classpath: [], sandbox: true, script: '''
+                return ['LINUX', 'WINDOWS', 'MAC']
+                '''
+                ]
+            ]
+            ]
+    ])
+])
+
+pipeline {
+    agent none
+    stages {
+        stage('Builds') {
+            matrix {
+                axes {
+                    axis {
+                        name 'PLATFORM'
+                        values 'LINUX', 'WINDOWS', 'MAC' // do not allow dynamic array
+                    }
+                }
+                when {
+                    expression { PLATFORM_FILTER.contains(PLATFORM) }
+                }
+                stages {
+                    stage('Build') {
+                        steps {
+                            println "myPlatform: ${PLATFORM}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
