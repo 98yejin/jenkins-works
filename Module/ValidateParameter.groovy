@@ -1,12 +1,23 @@
-// Regular Expression 
-// - \w: [a-zA-Z0-9_]
-def parameterPattern = ~/(\w+)/ 
-params.each { 
-    key, value ->
-    if (paramterPattern.matcher(key).matches() == false) {
-        // Validation Failed 
+def call() {
+    def paramsPattern = ~/(\w+)/
+    def invalidKeys = []
+    params.each { key, value ->
+        if (!pattern.matcher(key).matches()) {
+            invalidKeys.add(key)
+        } 
     }
-    if (paramterPattern.matcher(value).matches() == false) {
-        // Validation Failed
+    if (invalidKeys) {
+        throw new Exception("parameter validataion failed! keys:[${invalidKeys}]")
     }
 }
+
+def call(pattern, Closure onFail) {
+    params.each { key, value ->
+        if (pattern.matcher(key).matches()) {
+            // do nothing 
+        } else {
+            onFail()
+        }
+    }
+}
+
