@@ -16,7 +16,7 @@ def call(pattern, Closure onFail) {
         if (pattern.matcher(key).matches()) {
             // do nothing 
         } else {
-            onFail()
+            onFail(key, value)
         }
     }
 }
